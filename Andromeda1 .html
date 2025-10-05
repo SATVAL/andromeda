@@ -1,0 +1,2757 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Habitat Simulator - Andromeda Team Project</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #000 url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 10, 30, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.8s ease;
+        }
+        
+        .welcome-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 30px;
+        }
+        
+        .welcome-title {
+            font-size: 48px;
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(79, 195, 247, 0.7);
+        }
+        
+        .project-subtitle {
+            font-size: 28px;
+            color: #b3e5fc;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-subtitle {
+            font-size: 20px;
+            color: #e1f5fe;
+            margin-bottom: 40px;
+        }
+        
+        .astronauts-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .astronaut-card {
+            background: rgba(30, 40, 90, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .astronaut-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(79, 195, 247, 0.3);
+        }
+        
+        .astronaut-name {
+            font-size: 18px;
+            color: #4fc3f7;
+            margin-bottom: 10px;
+        }
+        
+        .astronaut-role {
+            font-size: 14px;
+            color: #b3e5fc;
+        }
+        
+        .astronaut-age {
+            font-size: 12px;
+            color: #e1f5fe;
+            margin-top: 5px;
+        }
+        
+        .start-button {
+            background: #0288d1;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+        
+        .start-button:hover {
+            background: #039be5;
+            box-shadow: 0 0 20px rgba(2, 136, 209, 0.7);
+            transform: scale(1.05);
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .sidebar {
+            width: 350px;
+            background: rgba(10, 15, 40, 0.95);
+            padding: 20px;
+            border-right: 1px solid rgba(0, 150, 255, 0.3);
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+            font-size: 28px;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.2);
+        }
+        
+        h2 {
+            color: #29b6f6;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        h3 {
+            color: #4fc3f7;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b3e5fc;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(20, 30, 70, 0.7);
+            border: 1px solid #29b6f6;
+            border-radius: 5px;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: #0288d1;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #039be5;
+            box-shadow: 0 0 10px rgba(2, 136, 209, 0.7);
+        }
+        
+        .crew-member {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(30, 40, 90, 0.5);
+            border-radius: 5px;
+        }
+        
+        .crew-name {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .remove-btn {
+            background: #f44336;
+            width: auto;
+            padding: 5px 10px;
+            margin: 0;
+        }
+        
+        .remove-btn:hover {
+            background: #e53935;
+        }
+        
+        #simulation-container {
+            flex: 1;
+            background: rgba(5, 10, 30, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #space-station {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        
+        #space-station:active {
+            cursor: grabbing;
+        }
+        
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 15, 40, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            max-width: 300px;
+            z-index: 5;
+        }
+        
+        .info-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .info-label {
+            color: #b3e5fc;
+        }
+        
+        .info-value {
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+        
+        .nasa-logo {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.7;
+        }
+        
+        .view-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 5;
+        }
+        
+        .view-btn {
+            width: auto;
+            padding: 8px 15px;
+            background: rgba(10, 15, 40, 0.8);
+            border: 1px solid #29b6f6;
+        }
+        
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 15, 40, 0.8);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            font-size: 12px;
+            max-width: 250px;
+            z-index: 5;
+        }
+        
+        .details-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 15, 40, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            max-width: 450px;
+            display: none;
+            z-index: 5;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .details-panel h3 {
+            margin-top: 0;
+            color: #4fc3f7;
+        }
+        
+        .details-list {
+            list-style-type: none;
+        }
+        
+        .details-list li {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.2);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            color: #f44336;
+            width: auto;
+            padding: 5px;
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .material-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(30, 40, 90, 0.5);
+            border-radius: 5px;
+        }
+        
+        .material-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .section-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .section-content.collapsed {
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .room-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .room-btn {
+            background: rgba(20, 30, 70, 0.7);
+            border: 1px solid #29b6f6;
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .room-btn.active {
+            background: #0288d1;
+        }
+        
+        .room-size-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .size-btn {
+            flex: 1;
+            background: rgba(20, 30, 70, 0.7);
+            border: 1px solid #29b6f6;
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .size-btn.active {
+            background: #0288d1;
+        }
+        
+        /* Safety indicator and AI panel - Top right corner */
+        .compliance-ai-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 400px;
+        }
+        
+        .compliance-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(10, 15, 40, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        .compliance-indicator {
+            width: 120px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+        }
+        
+        .compliance-red {
+            flex: 1;
+            background: #F44336;
+        }
+        
+        .compliance-yellow {
+            flex: 1;
+            background: #FFC107;
+        }
+        
+        .compliance-green {
+            flex: 1;
+            background: #4CAF50;
+        }
+        
+        .compliance-labels {
+            display: flex;
+            gap: 15px;
+            color: white;
+        }
+        
+        .compliance-label {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .compliance-label::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .compliance-label:nth-child(1)::before {
+            background: #F44336;
+        }
+        
+        .compliance-label:nth-child(2)::before {
+            background: #FFC107;
+        }
+        
+        .compliance-label:nth-child(3)::before {
+            background: #4CAF50;
+        }
+        
+        .ai-question-panel {
+            background: rgba(10, 15, 40, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #4fc3f7;
+            z-index: 100;
+            display: none;
+        }
+        
+        .ai-question {
+            margin-bottom: 15px;
+            color: #b3e5fc;
+        }
+        
+        .ai-answer-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(20, 30, 70, 0.7);
+            border: 1px solid #29b6f6;
+            border-radius: 5px;
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .trip-type {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .trip-btn {
+            background: rgba(20, 30, 70, 0.7);
+            border: 1px solid #29b6f6;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .trip-btn.active {
+            background: #0288d1;
+        }
+        
+        .ai-recommendation {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .room-type-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .room-type-btn {
+            background: rgba(20, 30, 70, 0.7);
+            border: 1px solid #29b6f6;
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .room-type-btn.active {
+            background: #0288d1;
+        }
+        
+        .room-quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .quantity-btn {
+            background: rgba(20, 30, 70, 0.7);
+            border: 1px solid #29b6f6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .quantity-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+        
+        .ai-applied {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4CAF50;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        
+        .simulation-active {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 15, 40, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4fc3f7;
+            text-align: center;
+            z-index: 20;
+            display: none;
+        }
+        
+        .simulation-title {
+            font-size: 24px;
+            color: #4fc3f7;
+            margin-bottom: 15px;
+        }
+        
+        .simulation-status {
+            font-size: 18px;
+            color: #b3e5fc;
+            margin-bottom: 20px;
+        }
+        
+        .simulation-progress {
+            width: 100%;
+            height: 20px;
+            background: rgba(20, 30, 70, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0288d1, #4fc3f7);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .station-details-section {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.2);
+        }
+        
+        .station-details-section h4 {
+            color: #4fc3f7;
+            margin-bottom: 8px;
+        }
+        
+        .station-details-section p {
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
+        
+        .material-specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .material-spec {
+            background: rgba(30, 40, 90, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .material-name {
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+        
+        .material-percentage {
+            font-size: 18px;
+            color: #b3e5fc;
+            margin-top: 5px;
+        }
+        
+        .astronaut-details {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 15, 40, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4fc3f7;
+            max-width: 500px;
+            z-index: 100;
+            display: none;
+        }
+        
+        .astronaut-details h3 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .astronaut-details p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .export-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .export-btn {
+            flex: 1;
+            background: rgba(20, 30, 70, 0.7);
+            border: 1px solid #29b6f6;
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .export-btn:hover {
+            background: #0288d1;
+        }
+        
+        .room-description {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(30, 40, 90, 0.5);
+            border-radius: 5px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* إضافة أنماط جديدة للعين وزر Blender */
+        .ai-eye-toggle {
+            position: absolute;
+            top: 20px;
+            right: 440px;
+            width: 40px;
+            height: 40px;
+            background: rgba(10, 15, 40, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            border: 1px solid rgba(79, 195, 247, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .ai-eye-toggle:hover {
+            background: rgba(20, 30, 70, 0.9);
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+        
+        .ai-eye-toggle svg {
+            width: 24px;
+            height: 24px;
+            fill: #4fc3f7;
+        }
+        
+        .ai-eye-toggle.hidden svg {
+            fill: #f44336;
+        }
+        
+        .blender-export {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: rgba(10, 15, 40, 0.9);
+            color: white;
+            border: 1px solid #29b6f6;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+        }
+        
+        .blender-export:hover {
+            background: #0288d1;
+            box-shadow: 0 0 10px rgba(2, 136, 209, 0.7);
+        }
+        
+        .blender-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .blender-modal-content {
+            background: rgba(10, 15, 40, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #4fc3f7;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .blender-modal h3 {
+            color: #4fc3f7;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .blender-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .blender-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .blender-option input {
+            width: auto;
+            margin: 0;
+        }
+        
+        .blender-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .blender-modal-btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .blender-export-btn {
+            background: #0288d1;
+            color: white;
+        }
+        
+        .blender-export-btn:hover {
+            background: #039be5;
+        }
+        
+        .blender-cancel-btn {
+            background: rgba(20, 30, 70, 0.7);
+            color: white;
+            border: 1px solid #29b6f6;
+        }
+        
+        .blender-cancel-btn:hover {
+            background: rgba(30, 40, 90, 0.7);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 150, 255, 0.3);
+            }
+            
+            #simulation-container {
+                height: 60vh;
+            }
+            
+            .view-controls {
+                top: 10px;
+                left: 10px;
+            }
+            
+            .info-panel, .details-panel {
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+            
+            .compliance-ai-container {
+                display: none;
+            }
+            
+            .astronauts-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .welcome-title {
+                font-size: 36px;
+            }
+            
+            .welcome-subtitle {
+                font-size: 18px;
+            }
+            
+            .material-specs {
+                grid-template-columns: 1fr;
+            }
+            
+            .ai-eye-toggle, .blender-export {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-screen" id="welcome-screen">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Space Habitat Simulator</h1>
+            <div class="project-subtitle">Andromeda Team Project</div>
+            <p class="welcome-subtitle">Welcome to the experience of designing your space habitat... your other home</p>
+            <p class="welcome-subtitle">Your astronauts will be:</p>
+            
+            <div class="astronauts-list">
+                <div class="astronaut-card" data-astronaut="salah">
+                    <div class="astronaut-name">Salahuddin Amer Makki</div>
+                    <div class="astronaut-role">Mission Commander</div>
+                    <div class="astronaut-age">19 years old</div>
+                </div>
+                <div class="astronaut-card" data-astronaut="ali">
+                    <div class="astronaut-name">Ali Sarhan</div>
+                    <div class="astronaut-role">Astronaut & Space Scientist</div>
+                    <div class="astronaut-age">21 years old</div>
+                </div>
+                <div class="astronaut-card" data-astronaut="ali-akbar">
+                    <div class="astronaut-name">Engineer Ali Al-Akbar</div>
+                    <div class="astronaut-role">Astronaut & Satellite Specialist</div>
+                    <div class="astronaut-age">19 years old</div>
+                </div>
+                <div class="astronaut-card" data-astronaut="zahra">
+                    <div class="astronaut-name">Zahra Ali</div>
+                    <div class="astronaut-role">Computer Scientist & Software Specialist</div>
+                    <div class="astronaut-age">21 years old</div>
+                </div>
+                <div class="astronaut-card" data-astronaut="doaa">
+                    <div class="astronaut-name">Doaa Rashid</div>
+                    <div class="astronaut-role">Astronaut & AI Specialist</div>
+                    <div class="astronaut-age">20 years old</div>
+                </div>
+                <div class="astronaut-card" data-astronaut="noor">
+                    <div class="astronaut-name">Noor Abdulzahra</div>
+                    <div class="astronaut-role">Communications Specialist</div>
+                    <div class="astronaut-age">19 years old</div>
+                </div>
+            </div>
+            
+            <button class="start-button" id="start-button">Start Simulation</button>
+        </div>
+    </div>
+    
+    <div class="astronaut-details" id="astronaut-details">
+        <button class="close-btn" id="close-astronaut-details">×</button>
+        <h3 id="detail-name"></h3>
+        <div id="detail-content"></div>
+    </div>
+    
+    <!-- إضافة أيقونة العين للتحكم في الذكاء الاصطناعي -->
+    <div class="ai-eye-toggle" id="ai-eye-toggle" title="إظهار/إخفاء الذكاء الاصطناعي">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+        </svg>
+    </div>
+    
+    <!-- إضافة زر تصدير لـ Blender -->
+    <button class="blender-export" id="blender-export">تصدير إلى Blender</button>
+    
+    <!-- نافذة التصدير إلى Blender -->
+    <div class="blender-modal" id="blender-modal">
+        <div class="blender-modal-content">
+            <h3>تصدير المجسم إلى Blender</h3>
+            <div class="blender-options">
+                <div class="blender-option">
+                    <input type="checkbox" id="export-geometry" checked>
+                    <label for="export-geometry">تصدير الهندسة</label>
+                </div>
+                <div class="blender-option">
+                    <input type="checkbox" id="export-materials" checked>
+                    <label for="export-materials">تصدير المواد</label>
+                </div>
+                <div class="blender-option">
+                    <input type="checkbox" id="export-textures" checked>
+                    <label for="export-textures">تصدير القوام</label>
+                </div>
+                <div class="blender-option">
+                    <input type="checkbox" id="export-animation">
+                    <label for="export-animation">تصدير الرسوم المتحركة</label>
+                </div>
+            </div>
+            <div class="blender-modal-buttons">
+                <button class="blender-modal-btn blender-export-btn" id="confirm-blender-export">تصدير</button>
+                <button class="blender-modal-btn blender-cancel-btn" id="cancel-blender-export">إلغاء</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Safety indicator and AI panel - Top right corner -->
+    <div class="compliance-ai-container">
+        <div class="compliance-container">
+            <div class="compliance-indicator">
+                <div class="compliance-red"></div>
+                <div class="compliance-yellow"></div>
+                <div class="compliance-green"></div>
+            </div>
+            
+            <div class="compliance-labels">
+                <div class="compliance-label">Problem</div>
+                <div class="compliance-label">Warning</div>
+                <div class="compliance-label">Excellent</div>
+            </div>
+        </div>
+        
+        <div class="ai-question-panel" id="ai-question-panel">
+            <div class="ai-question" id="ai-question-text"></div>
+            <input type="text" class="ai-answer-input" id="ai-answer-input" placeholder="Type your answer here...">
+            <button id="ai-answer-btn">Submit Answer</button>
+        </div>
+    </div>
+    
+    <div class="container" id="main-container">
+        <div class="sidebar" id="sidebar">
+            <h1>Space Habitat Simulator - Andromeda Team</h1>
+            
+            <div class="control-group">
+                <h2 id="destination-section">
+                    Destination & Mission Type
+                    <span class="toggle-icon">▼</span>
+                </h2>
+                <div class="section-content" id="destination-content">
+                    <select id="destination">
+                        <option value="iss">International Space Station (ISS)</option>
+                        <option value="moon">Moon</option>
+                        <option value="mars">Mars</option>
+                        <option value="deep-space">Deep Space</option>
+                    </select>
+                    
+                    <div class="trip-type">
+                        <div class="trip-btn" id="one-way">One Way</div>
+                        <div class="trip-btn active" id="round-trip">Round Trip</div>
+                    </div>
+                    
+                    <div id="moon-options" style="display: none;">
+                        <label for="moon-duration">Moon Stay Duration (days)</label>
+                        <input type="number" id="moon-duration" value="7" min="1" max="30">
+                    </div>
+                    
+                    <div class="ai-recommendation" id="ai-recommendation">
+                        <!-- AI recommendations will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2 id="crew-section">
+                    Mission Crew
+                    <span class="toggle-icon">▼</span>
+                </h2>
+                <div class="section-content" id="crew-content">
+                    <div id="crew-list">
+                        <!-- Crew members will be added here dynamically -->
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="crew-name" placeholder="Astronaut name">
+                        <button id="add-crew">Add</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2 id="rooms-section">
+                    Room Configuration
+                    <span class="toggle-icon">▼</span>
+                </h2>
+                <div class="section-content" id="rooms-content">
+                    <div class="room-controls">
+                        <div class="room-btn active" data-room="control">Control Room</div>
+                        <div class="room-btn" data-room="lab">Laboratory</div>
+                        <div class="room-btn" data-room="bedroom">Bedrooms</div>
+                        <div class="room-btn" data-room="kitchen">Kitchen</div>
+                        <div class="room-btn" data-room="bathroom">Bathroom</div>
+                        <div class="room-btn" data-room="storage">Storage</div>
+                    </div>
+                    
+                    <div class="room-description" id="room-description">
+                        <!-- Room description will be populated here -->
+                    </div>
+                    
+                    <div class="room-type-controls">
+                        <div class="room-type-btn active" data-type="standard">Standard</div>
+                        <div class="room-type-btn" data-type="advanced">Advanced</div>
+                        <div class="room-type-btn" data-type="luxury">Luxury</div>
+                        <div class="room-type-btn" data-type="compact">Compact</div>
+                    </div>
+                    
+                    <div class="room-size-controls">
+                        <div class="size-btn active" data-size="small">Small</div>
+                        <div class="size-btn" data-size="medium">Medium</div>
+                        <div class="size-btn" data-size="large">Large</div>
+                    </div>
+                    
+                    <div class="room-quantity-controls">
+                        <div class="quantity-btn" id="decrease-room">-</div>
+                        <div class="quantity-display" id="room-quantity">1</div>
+                        <div class="quantity-btn" id="increase-room">+</div>
+                        <span>Room Quantity</span>
+                    </div>
+                    
+                    <div id="room-info" style="margin-top: 10px; padding: 10px; background: rgba(30,40,90,0.5); border-radius: 5px;">
+                        <h4>Room Information</h4>
+                        <div id="room-details">Select a room to view details</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h2 id="supplies-section">
+                    Supplies & Resources
+                    <span class="toggle-icon">▼</span>
+                </h2>
+                <div class="section-content" id="supplies-content">
+                    <div class="info-item">
+                        <span class="info-label">Food Required:</span>
+                        <span class="info-value" id="food-required">0 kg</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Water Required:</span>
+                        <span class="info-value" id="water-required">0 L</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Oxygen Required:</span>
+                        <span class="info-value" id="oxygen-required">0 kg</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Power Required:</span>
+                        <span class="info-value" id="power-required">0 kWh</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="export-controls">
+                <button class="export-btn" id="export-model">Export 3D Model</button>
+                <button class="export-btn" id="clear-model">Clear Model</button>
+            </div>
+            
+            <button id="simulate-btn">Run Simulation</button>
+            <button id="reset-view">Reset View</button>
+            
+            <div class="nasa-logo">
+                <p>AI Mathematical System - Andromeda Team</p>
+                <p>Andromeda Team AI Mathematical System</p>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="simulation-container">
+                <div class="view-controls">
+                    <button class="view-btn" id="exterior-view">Exterior View</button>
+                    <button class="view-btn" id="interior-view">Interior View</button>
+                    <button class="view-btn" id="details-btn">Habitat Details</button>
+                    <button class="view-btn" id="toggle-panels">Show/Hide Panels</button>
+                </div>
+                
+                <div class="controls-info">
+                    <strong>Controls:</strong><br>
+                    • Mouse: Click & drag to rotate<br>
+                    • Mouse Wheel: Zoom in/out<br>
+                    • Arrow Keys: Rotate view<br>
+                    • W/A/S/D: Move camera
+                </div>
+                
+                <div id="space-station"></div>
+                
+                <div class="info-panel">
+                    <h3>Space Habitat Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Total Volume:</span>
+                        <span class="info-value" id="total-volume">0 m³</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Crew Members:</span>
+                        <span class="info-value" id="crew-count">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Mission Duration:</span>
+                        <span class="info-value" id="mission-duration-display">0 days</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Destination:</span>
+                        <span class="info-value" id="destination-display">-</span>
+                    </div>
+                </div>
+                
+                <div class="details-panel" id="details-panel">
+                    <button class="close-btn" id="close-details">×</button>
+                    <h3>Space Habitat Details - Andromeda Team Specifications</h3>
+                    <div id="station-details">
+                        <!-- Details will be populated here dynamically -->
+                    </div>
+                </div>
+                
+                <div class="simulation-active" id="simulation-active">
+                    <div class="simulation-title">Simulation Running</div>
+                    <div class="simulation-status" id="simulation-status">Loading data...</div>
+                    <div class="simulation-progress">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                    <button id="stop-simulation">Stop Simulation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // إضافة متغير لتتبع حالة إظهار الذكاء الاصطناعي
+        let aiVisible = true;
+        
+        // وظيفة تبديل حالة الذكاء الاصطناعي
+        function toggleAI() {
+            aiVisible = !aiVisible;
+            const aiPanel = document.getElementById('ai-question-panel');
+            const eyeToggle = document.getElementById('ai-eye-toggle');
+            
+            if (aiVisible) {
+                aiPanel.style.display = 'block';
+                eyeToggle.classList.remove('hidden');
+            } else {
+                aiPanel.style.display = 'none';
+                eyeToggle.classList.add('hidden');
+            }
+        }
+        
+        // وظيفة تصدير المجسم إلى Blender
+        function exportToBlender() {
+            // في التطبيق الحقيقي، ستقوم هذه الوظيفة بتصدير بيانات المجسم إلى Blender
+            // إما من خلال API أو حفظ ملف يمكن فتحه في Blender
+            
+            // في هذا المثال، سنقوم بمحاكاة التصدير
+            const exportGeometry = document.getElementById('export-geometry').checked;
+            const exportMaterials = document.getElementById('export-materials').checked;
+            const exportTextures = document.getElementById('export-textures').checked;
+            const exportAnimation = document.getElementById('export-animation').checked;
+            
+            // إنشاء بيانات المجسم بتنسيق يمكن لـ Blender قراءته
+            const modelData = {
+                metadata: {
+                    format: "Blender JSON",
+                    version: "1.0",
+                    generator: "Space Habitat Simulator"
+                },
+                geometries: exportGeometry ? getGeometryData() : null,
+                materials: exportMaterials ? getMaterialData() : null,
+                textures: exportTextures ? getTextureData() : null,
+                animation: exportAnimation ? getAnimationData() : null
+            };
+            
+            // تحويل البيانات إلى JSON
+            const jsonData = JSON.stringify(modelData, null, 2);
+            
+            // إنشاء رابط تحميل
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'space_habitat_model.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // إغلاق النافذة
+            document.getElementById('blender-modal').style.display = 'none';
+            
+            alert('تم تصدير المجسم بنجاح! يمكنك الآن فتح الملف في Blender.');
+        }
+        
+        // وظائف مساعدة لاستخراج بيانات المجسم
+        function getGeometryData() {
+            // في التطبيق الحقيقي، ستقوم باستخراج بيانات الهندسة من المشهد
+            return {
+                mainBody: {
+                    type: "cylinder",
+                    radius: nasaStationSpecs.dimensions.diameter / 2,
+                    height: nasaStationSpecs.dimensions.length,
+                    segments: 32
+                },
+                endCaps: {
+                    type: "hemisphere",
+                    radius: nasaStationSpecs.dimensions.diameter / 2,
+                    segments: 32
+                },
+                solarPanels: {
+                    type: "box",
+                    width: 6,
+                    height: 0.1,
+                    depth: 3
+                },
+                rooms: roomConfig
+            };
+        }
+        
+        function getMaterialData() {
+            // استخراج بيانات المواد
+            const materials = {};
+            Object.keys(nasaStationSpecs.materials).forEach(key => {
+                const material = nasaStationSpecs.materials[key];
+                materials[key] = {
+                    name: material.name,
+                    color: material.color,
+                    roughness: 0.7,
+                    metalness: 0.3
+                };
+            });
+            return materials;
+        }
+        
+        function getTextureData() {
+            // في التطبيق الحقيقي، ستقوم باستخراج بيانات القوام
+            return {
+                external: "carbon_fiber_texture.png",
+                internal: "aluminum_texture.png",
+                thermal: "insulation_texture.png",
+                titanium: "titanium_texture.png"
+            };
+        }
+        
+        function getAnimationData() {
+            // في التطبيق الحقيقي، ستقوم باستخراج بيانات الرسوم المتحركة
+            return {
+                rotation: {
+                    type: "continuous",
+                    speed: 0.002
+                },
+                solarPanels: {
+                    type: "oscillating",
+                    range: 30,
+                    speed: 0.01
+                }
+            };
+        }
+
+        // Astronaut information
+        const astronautsInfo = {
+            salah: {
+                name: "Salahuddin Amer Makki",
+                role: "Mission Commander",
+                age: "19 years old",
+                details: "A 19-year-old who is the leader of the team and the entire project. Possesses exceptional leadership skills and deep knowledge in space engineering and navigation. Studied aerospace engineering at the University of Baghdad and graduated with honors. Leads the team with confidence and wisdom towards achieving mission objectives."
+            },
+            ali: {
+                name: "Ali Sarhan",
+                role: "Astronaut & Space Scientist",
+                age: "21 years old",
+                details: "An Iraqi space and astronomy scientist aged 21. Specialized in space navigation and the study of celestial bodies. Holds a Master's degree in Astronomy from Cairo University. Has extensive experience in analyzing astronomical data and planning space mission trajectories."
+            },
+            "ali-akbar": {
+                name: "Engineer Ali Al-Akbar",
+                role: "Astronaut & Satellite Specialist",
+                age: "19 years old",
+                details: "A 19-year-old Lebanese astronaut responsible for satellites in the mission. Expert in designing and operating satellites and space communication systems. Studied electrical engineering at the Lebanese University and possesses advanced technical skills in space technology."
+            },
+            zahra: {
+                name: "Zahra Ali",
+                role: "Computer Scientist & Software Specialist",
+                age: "21 years old",
+                details: "An Iraqi computer scientist aged 21, responsible for all software and computers in the mission. Specialized in artificial intelligence and automated control systems. Developed many advanced programs for space systems and possesses exceptional skills in solving complex technical problems."
+            },
+            doaa: {
+                name: "Doaa Rashid",
+                role: "Astronaut & AI Specialist",
+                age: "20 years old",
+                details: "A 20-year-old Yemeni astronaut and AI scientist responsible for the mission's artificial intelligence. Combines knowledge in space sciences with advanced AI technologies. Developed intelligent systems for spacecraft control and scientific data analysis."
+            },
+            noor: {
+                name: "Noor Abdulzahra",
+                role: "Communications Specialist",
+                age: "19 years old",
+                details: "A 19-year-old communications specialist. Responsible for maintaining communication between the spacecraft and ground control station. Specialized in space communication systems and transmission/reception technologies. Possesses exceptional communication skills and ability to work under pressure."
+            }
+        };
+
+        // NASA's real space station specifications
+        const nasaStationSpecs = {
+            dimensions: {
+                length: 15, // Reduced from 25m to be more web-appropriate
+                diameter: 4, // Reduced from 8m to be more web-appropriate
+                doorDiameter: 0.8 // Reduced from 1.5m to be more web-appropriate
+            },
+            materials: {
+                external: {
+                    name: "Carbon Fiber",
+                    percentage: 45,
+                    color: 0x2c3e50,
+                    description: "To withstand radiation and harsh mechanics"
+                },
+                internal: {
+                    name: "High-Resistance Aluminum",
+                    percentage: 30,
+                    color: 0xbdc3c7,
+                    description: "To reduce weight and absorb shocks"
+                },
+                thermal: {
+                    name: "Multi-Layer Insulation (MLI)",
+                    percentage: 15,
+                    color: 0xffffff,
+                    description: "For thermal protection"
+                },
+                titanium: {
+                    name: "Titanium Alloys",
+                    percentage: 10,
+                    color: 0x7f8c8d,
+                    description: "For main locks and fixtures"
+                }
+            },
+            crew: {
+                capacity: 6,
+                rooms: 6
+            },
+            mission: {
+                duration: 30, // days
+                destination: "International Space Station (ISS)"
+            },
+            rooms: {
+                control: { 
+                    name: "Control Room", 
+                    floor: "Lower", 
+                    size: "Large",
+                    description: "The command and control center of the space habitat. Contains multiple display screens, advanced computers, and communication systems with Earth. All habitat systems are monitored and the mission is directed from here."
+                },
+                lab: { 
+                    name: "Science Laboratory", 
+                    floor: "Lower", 
+                    size: "Large",
+                    description: "Equipped with the latest scientific equipment for conducting experiments in microgravity environment. Contains advanced microscopes, analysis devices, and isolated areas for biological and chemical experiments."
+                },
+                bedroom: { 
+                    name: "Bedrooms", 
+                    floor: "Upper", 
+                    size: "Medium",
+                    description: "Designed to provide comfort and privacy for crew members. Each room contains a tethered bed to prevent floating in microgravity, personal lockers, and adjustable lighting."
+                },
+                kitchen: { 
+                    name: "Kitchen", 
+                    floor: "Upper", 
+                    size: "Small",
+                    description: "Equipped with a special space stove, refrigerator, and food storage area. Food is specially packaged to suit the microgravity environment, with heating and preparation systems."
+                },
+                bathroom: { 
+                    name: "Bathroom", 
+                    floor: "Upper", 
+                    size: "Small",
+                    description: "Specially designed for use in microgravity. Contains a suction toilet, air shower, and advanced water recycling system."
+                },
+                storage: { 
+                    name: "Storage", 
+                    floor: "Lower", 
+                    size: "Medium",
+                    description: "Storage for supplies, scientific materials, and backup equipment. Equipped with a fixation system to prevent contents from moving in microgravity, with inventory tracking system."
+                }
+            },
+            systems: {
+                lifeSupport: "Advanced oxygen tanks with CO₂ filtration",
+                pressure: "1 ATM, adjustable according to mission",
+                temperature: "22–24° Celsius",
+                communication: "High-capacity space radio, internal Wi-Fi network"
+            }
+        };
+
+        // AI Mathematical System
+        const SpaceMissionAI = {
+            // Distance and time calculations (in kilometers and days)
+            distances: {
+                iss: 400,        // Low Earth orbit
+                moon: 384400,    // Average distance to Moon
+                mars: 78340000,  // Average distance to Mars (at approach)
+                'deep-space': 1500000000 // Assumed deep space distance
+            },
+            
+            // Travel speeds (km/h)
+            speeds: {
+                iss: 28000,      // ISS speed
+                moon: 10000,     // Lunar vehicle speed
+                mars: 50000,     // Mars vehicle speed
+                'deep-space': 100000 // Assumed deep space speed
+            },
+            
+            // Basic needs per person per day
+            dailyNeeds: {
+                food: 1.8,       // kg
+                water: 3.5,      // L
+                oxygen: 0.84,    // kg
+                power: 2.5       // kWh
+            },
+            
+            // Interactive AI questions
+            questions: [
+                {
+                    id: "destination",
+                    text: "Why did you choose this specific destination for your space mission?",
+                    trigger: "destination-change"
+                },
+                {
+                    id: "crew-size",
+                    text: "What is the appropriate crew size for this mission and why?",
+                    trigger: "crew-change"
+                },
+                {
+                    id: "room-config",
+                    text: "How do different room configurations affect crew comfort and mission efficiency?",
+                    trigger: "room-change"
+                },
+                {
+                    id: "resources",
+                    text: "What are the biggest challenges in providing resources for long-term space missions?",
+                    trigger: "supplies-change"
+                },
+                {
+                    id: "safety",
+                    text: "What are the most important safety measures to consider in space habitat design?",
+                    trigger: "safety-change"
+                },
+                {
+                    id: "innovation",
+                    text: "What technological innovations could improve the efficiency of the space habitat?",
+                    trigger: "innovation-change"
+                },
+                {
+                    id: "sustainability",
+                    text: "How can we make the space habitat more environmentally sustainable?",
+                    trigger: "sustainability-change"
+                },
+                {
+                    id: "emergency",
+                    text: "What emergency plans should be available in the space habitat?",
+                    trigger: "emergency-change"
+                }
+            ],
+            
+            currentQuestionIndex: 0,
+            askedQuestions: new Set(), // To track asked questions
+            
+            askQuestion: function(trigger) {
+                // If the question has been asked before, don't ask it again
+                if (this.askedQuestions.has(trigger)) {
+                    return;
+                }
+                
+                const question = this.questions.find(q => q.trigger === trigger);
+                if (question) {
+                    document.getElementById('ai-question-text').textContent = question.text;
+                    document.getElementById('ai-question-panel').style.display = 'block';
+                    document.getElementById('ai-answer-input').value = '';
+                    document.getElementById('ai-answer-input').focus();
+                    
+                    // Add question to asked questions set
+                    this.askedQuestions.add(trigger);
+                }
+            },
+            
+            processAnswer: function(answer) {
+                // Here we can process and analyze the answer
+                console.log("User answer:", answer);
+                
+                // Close question panel
+                document.getElementById('ai-question-panel').style.display = 'none';
+                
+                // Show confirmation message
+                this.showAppliedMessage("Thank you for your answer! Your response has been analyzed and will be considered in improving the design.");
+                
+                // Find next question that hasn't been asked yet
+                const nextQuestion = this.questions.find(q => !this.askedQuestions.has(q.trigger));
+                if (nextQuestion) {
+                    setTimeout(() => {
+                        this.askQuestion(nextQuestion.trigger);
+                    }, 3000);
+                }
+            },
+            
+            resetQuestions: function() {
+                // Reset asked questions (when exporting or clearing model)
+                this.askedQuestions.clear();
+                this.currentQuestionIndex = 0;
+            },
+            
+            // Mission calculations
+            calculateMission: function(destination, tripType, crewSize, moonDuration = 0) {
+                const distance = this.distances[destination];
+                const speed = this.speeds[destination];
+                
+                // Calculate travel time (in days)
+                let travelTimeOneWay = (distance / speed) / 24; // Convert from hours to days
+                
+                // Adjust travel time based on destination
+                if (destination === 'moon') {
+                    travelTimeOneWay = 3; // 3 days to Moon (real)
+                } else if (destination === 'mars') {
+                    travelTimeOneWay = 210; // 7 months to Mars (real)
+                } else if (destination === 'iss') {
+                    travelTimeOneWay = 0.5; // 12 hours to ISS
+                }
+                
+                let totalMissionTime = travelTimeOneWay;
+                
+                if (tripType === 'round-trip') {
+                    totalMissionTime = travelTimeOneWay * 2;
+                }
+                
+                // Add Moon stay duration
+                if (destination === 'moon') {
+                    totalMissionTime += moonDuration;
+                }
+                
+                // Calculate required resources
+                const totalFood = crewSize * this.dailyNeeds.food * totalMissionTime;
+                const totalWater = crewSize * this.dailyNeeds.water * totalMissionTime;
+                const totalOxygen = crewSize * this.dailyNeeds.oxygen * totalMissionTime;
+                const totalPower = crewSize * this.dailyNeeds.power * totalMissionTime;
+                
+                return {
+                    travelTimeOneWay,
+                    totalMissionTime: Math.ceil(totalMissionTime),
+                    totalFood: Math.ceil(totalFood),
+                    totalWater: Math.ceil(totalWater),
+                    totalOxygen: Math.ceil(totalOxygen),
+                    totalPower: Math.ceil(totalPower)
+                };
+            },
+            
+            // Generate smart recommendations
+            generateRecommendations: function(destination, crewSize, missionData) {
+                let recommendations = [];
+                
+                // Recommendations based on destination
+                if (destination === 'moon') {
+                    recommendations.push({
+                        text: "• Advanced life support system for water recycling",
+                        action: () => this.applyWaterRecycling()
+                    });
+                    recommendations.push({
+                        text: "• Additional oxygen tanks",
+                        action: () => this.applyExtraOxygen()
+                    });
+                    recommendations.push({
+                        text: "• Large solar panels for power generation",
+                        action: () => this.applySolarPanels()
+                    });
+                } else if (destination === 'mars') {
+                    recommendations.push({
+                        text: "• Fully closed-loop life support system",
+                        action: () => this.applyClosedLoopLifeSupport()
+                    });
+                    recommendations.push({
+                        text: "• Small nuclear reactor for power",
+                        action: () => this.applyNuclearReactor()
+                    });
+                    recommendations.push({
+                        text: "• Greenhouse for food cultivation",
+                        action: () => this.applyGreenhouse()
+                    });
+                } else if (destination === 'deep-space') {
+                    recommendations.push({
+                        text: "• Crew hibernation system to reduce consumption",
+                        action: () => this.applyHibernationSystem()
+                    });
+                    recommendations.push({
+                        text: "• Advanced ion propulsion",
+                        action: () => this.applyIonPropulsion()
+                    });
+                    recommendations.push({
+                        text: "• Advanced radiation shield",
+                        action: () => this.applyRadiationShield()
+                    });
+                }
+                
+                // Recommendations based on crew size
+                if (crewSize > 6) {
+                    recommendations.push({
+                        text: "• Additional living space for large crew",
+                        action: () => this.applyExtraLivingSpace()
+                    });
+                }
+                
+                // Recommendations based on mission duration
+                if (missionData.totalMissionTime > 180) {
+                    recommendations.push({
+                        text: "• Entertainment and activity system for crew",
+                        action: () => this.applyEntertainmentSystem()
+                    });
+                    recommendations.push({
+                        text: "• Comprehensive medical clinic",
+                        action: () => this.applyMedicalClinic()
+                    });
+                }
+                
+                return recommendations;
+            },
+            
+            // Apply recommendations
+            applyWaterRecycling: function() {
+                // Reduce water consumption by 40%
+                const waterRequired = document.getElementById('water-required');
+                const currentValue = parseInt(waterRequired.textContent);
+                waterRequired.textContent = `${Math.round(currentValue * 0.6)} L`;
+                this.showAppliedMessage("Water recycling system applied");
+            },
+            
+            applyExtraOxygen: function() {
+                // Increase oxygen capacity by 30%
+                const oxygenRequired = document.getElementById('oxygen-required');
+                const currentValue = parseInt(oxygenRequired.textContent);
+                oxygenRequired.textContent = `${Math.round(currentValue * 1.3)} kg`;
+                this.showAppliedMessage("Additional oxygen tanks added");
+            },
+            
+            applySolarPanels: function() {
+                // Increase available power by 50%
+                const powerRequired = document.getElementById('power-required');
+                const currentValue = parseInt(powerRequired.textContent);
+                powerRequired.textContent = `${Math.round(currentValue * 1.5)} kWh`;
+                this.showAppliedMessage("Additional solar panels installed");
+            },
+            
+            applyClosedLoopLifeSupport: function() {
+                // Reduce all needs by 25%
+                const foodRequired = document.getElementById('food-required');
+                const waterRequired = document.getElementById('water-required');
+                const oxygenRequired = document.getElementById('oxygen-required');
+                
+                foodRequired.textContent = `${Math.round(parseInt(foodRequired.textContent) * 0.75)} kg`;
+                waterRequired.textContent = `${Math.round(parseInt(waterRequired.textContent) * 0.75)} L`;
+                oxygenRequired.textContent = `${Math.round(parseInt(oxygenRequired.textContent) * 0.75)} kg`;
+                
+                this.showAppliedMessage("Closed-loop life support system applied");
+            },
+            
+            applyNuclearReactor: function() {
+                // Increase power by 200%
+                const powerRequired = document.getElementById('power-required');
+                const currentValue = parseInt(powerRequired.textContent);
+                powerRequired.textContent = `${Math.round(currentValue * 3)} kWh`;
+                this.showAppliedMessage("Small nuclear reactor installed");
+            },
+            
+            applyGreenhouse: function() {
+                // Reduce food by 50%
+                const foodRequired = document.getElementById('food-required');
+                const currentValue = parseInt(foodRequired.textContent);
+                foodRequired.textContent = `${Math.round(currentValue * 0.5)} kg`;
+                this.showAppliedMessage("Food cultivation greenhouse added");
+            },
+            
+            applyHibernationSystem: function() {
+                // Reduce all needs by 60%
+                const foodRequired = document.getElementById('food-required');
+                const waterRequired = document.getElementById('water-required');
+                const oxygenRequired = document.getElementById('oxygen-required');
+                const powerRequired = document.getElementById('power-required');
+                
+                foodRequired.textContent = `${Math.round(parseInt(foodRequired.textContent) * 0.4)} kg`;
+                waterRequired.textContent = `${Math.round(parseInt(waterRequired.textContent) * 0.4)} L`;
+                oxygenRequired.textContent = `${Math.round(parseInt(oxygenRequired.textContent) * 0.4)} kg`;
+                powerRequired.textContent = `${Math.round(parseInt(powerRequired.textContent) * 0.4)} kWh`;
+                
+                this.showAppliedMessage("Crew hibernation system applied");
+            },
+            
+            applyIonPropulsion: function() {
+                // Reduce mission duration by 30%
+                const missionDuration = document.getElementById('mission-duration-display');
+                const currentValue = parseInt(missionDuration.textContent);
+                missionDuration.textContent = `${Math.round(currentValue * 0.7)} days`;
+                this.showAppliedMessage("Advanced ion propulsion installed");
+            },
+            
+            applyRadiationShield: function() {
+                this.showAppliedMessage("Advanced radiation shield installed");
+            },
+            
+            applyExtraLivingSpace: function() {
+                // Increase habitat size by 20%
+                const totalVolume = document.getElementById('total-volume');
+                const currentValue = parseInt(totalVolume.textContent);
+                totalVolume.textContent = `${Math.round(currentValue * 1.2)} m³`;
+                this.showAppliedMessage("Additional living space added");
+            },
+            
+            applyEntertainmentSystem: function() {
+                this.showAppliedMessage("Crew entertainment system added");
+            },
+            
+            applyMedicalClinic: function() {
+                this.showAppliedMessage("Comprehensive medical clinic added");
+            },
+            
+            showAppliedMessage: function(message) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'ai-applied';
+                messageElement.textContent = message;
+                
+                const aiRec = document.getElementById('ai-recommendation');
+                aiRec.appendChild(messageElement);
+                
+                // Remove message after 3 seconds
+                setTimeout(() => {
+                    messageElement.remove();
+                }, 3000);
+            },
+            
+            // Check compliance with NASA standards
+            checkNASACompliance: function(missionData, crewSize, roomConfig) {
+                let issues = [];
+                let warnings = [];
+                
+                // Check resources
+                if (missionData.totalFood > 10000) {
+                    issues.push("Food quantity exceeds maximum capacity");
+                } else if (missionData.totalFood > 5000) {
+                    warnings.push("Food quantity close to maximum limit");
+                }
+                
+                if (missionData.totalWater > 20000) {
+                    issues.push("Water quantity exceeds maximum capacity");
+                } else if (missionData.totalWater > 10000) {
+                    warnings.push("Water quantity close to maximum limit");
+                }
+                
+                // Check space
+                const totalVolume = roomConfig.totalVolume;
+                const volumePerPerson = totalVolume / crewSize;
+                
+                if (volumePerPerson < 20) {
+                    issues.push(`Space per person (${volumePerPerson.toFixed(1)} m³) below minimum (25 m³)`);
+                } else if (volumePerPerson < 25) {
+                    warnings.push(`Space per person (${volumePerPerson.toFixed(1)} m³) close to minimum`);
+                }
+                
+                return { issues, warnings };
+            }
+        };
+
+        // Main 3D scene elements
+        let scene, camera, renderer, controls;
+        let spaceStation = null;
+        let interiorView = false;
+        let simulationRunning = false;
+        
+        // Mouse and keyboard controls
+        let isMouseDown = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let cameraPosition = { x: 0, y: 10, z: 30 };
+        let cameraRotation = { x: 0, y: 0 };
+        
+        // Crew and room management
+        let crewMembers = ['Salahuddin Amer Makki', 'Ali Sarhan', 'Engineer Ali Al-Akbar', 'Zahra Ali', 'Doaa Rashid', 'Noor Abdulzahra'];
+        let roomConfig = {
+            control: { size: 'large', volume: 60, type: 'advanced', quantity: 1 },
+            lab: { size: 'large', volume: 60, type: 'advanced', quantity: 1 },
+            bedroom: { size: 'medium', volume: 45, type: 'standard', quantity: 6 },
+            kitchen: { size: 'small', volume: 30, type: 'compact', quantity: 1 },
+            bathroom: { size: 'small', volume: 25, type: 'compact', quantity: 2 },
+            storage: { size: 'medium', volume: 50, type: 'standard', quantity: 2 }
+        };
+        
+        // Initialize 3D scene
+        function init3DScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050a20);
+            
+            const container = document.getElementById('space-station');
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(10, 20, 15);
+            scene.add(directionalLight);
+            
+            addStars();
+            createSpaceStation();
+            
+            // Add event listeners for controls
+            setupControls();
+            
+            animate();
+            
+            window.addEventListener('resize', onWindowResize);
+        }
+        
+        function setupControls() {
+            const container = document.getElementById('space-station');
+            
+            // Mouse controls
+            container.addEventListener('mousedown', (event) => {
+                isMouseDown = true;
+                previousMousePosition = { x: event.clientX, y: event.clientY };
+            });
+            
+            container.addEventListener('mousemove', (event) => {
+                if (!isMouseDown) return;
+                
+                const deltaX = event.clientX - previousMousePosition.x;
+                const deltaY = event.clientY - previousMousePosition.y;
+                
+                // Slower and more balanced rotation
+                cameraRotation.y += deltaX * 0.005; // Reduced from 0.01
+                cameraRotation.x += deltaY * 0.005; // Reduced from 0.01
+                
+                // Limit vertical rotation
+                cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
+                
+                previousMousePosition = { x: event.clientX, y: event.clientY };
+            });
+            
+            container.addEventListener('mouseup', () => {
+                isMouseDown = false;
+            });
+            
+            container.addEventListener('mouseleave', () => {
+                isMouseDown = false;
+            });
+            
+            // Mouse wheel for zoom
+            container.addEventListener('wheel', (event) => {
+                const zoomSpeed = 0.05; // Reduced from 0.1 for smoother zoom
+                camera.position.z += event.deltaY * zoomSpeed;
+                
+                // Limit zoom
+                camera.position.z = Math.max(5, Math.min(100, camera.position.z));
+            });
+            
+            // Keyboard controls
+            document.addEventListener('keydown', (event) => {
+                const moveSpeed = 0.3; // Reduced from 0.5 for smoother movement
+                const rotateSpeed = 0.02; // Reduced from 0.03 for smoother rotation
+                
+                switch(event.key) {
+                    case 'ArrowUp':
+                        cameraRotation.x -= rotateSpeed;
+                        break;
+                    case 'ArrowDown':
+                        cameraRotation.x += rotateSpeed;
+                        break;
+                    case 'ArrowLeft':
+                        cameraRotation.y += rotateSpeed;
+                        break;
+                    case 'ArrowRight':
+                        cameraRotation.y -= rotateSpeed;
+                        break;
+                    case 'w':
+                    case 'W':
+                        camera.position.z -= moveSpeed;
+                        break;
+                    case 's':
+                    case 'S':
+                        camera.position.z += moveSpeed;
+                        break;
+                    case 'a':
+                    case 'A':
+                        camera.position.x -= moveSpeed;
+                        break;
+                    case 'd':
+                    case 'D':
+                        camera.position.x += moveSpeed;
+                        break;
+                }
+                
+                // Limit vertical rotation
+                cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x));
+            });
+        }
+        
+        function addStars() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
+            
+            const starVertices = [];
+            for (let i = 0; i < 5000; i++) {
+                starVertices.push(
+                    (Math.random() - 0.5) * 2000,
+                    (Math.random() - 0.5) * 2000,
+                    (Math.random() - 0.5) * 2000
+                );
+            }
+            
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+        }
+        
+        function createSpaceStation() {
+            if (spaceStation) scene.remove(spaceStation);
+            
+            spaceStation = new THREE.Group();
+            
+            // Main body (cylindrical with hemispherical ends) - REALISTIC SIZE
+            const mainBodyGeometry = new THREE.CylinderGeometry(
+                nasaStationSpecs.dimensions.diameter / 2, 
+                nasaStationSpecs.dimensions.diameter / 2, 
+                nasaStationSpecs.dimensions.length, 
+                32
+            );
+            
+            const mainBodyMaterial = new THREE.MeshStandardMaterial({ 
+                color: nasaStationSpecs.materials.external.color,
+                roughness: 0.7,
+                metalness: 0.3
+            });
+            
+            const mainBody = new THREE.Mesh(mainBodyGeometry, mainBodyMaterial);
+            mainBody.rotation.x = Math.PI / 2;
+            spaceStation.add(mainBody);
+            
+            // Hemispherical end caps
+            const endCapGeometry = new THREE.SphereGeometry(nasaStationSpecs.dimensions.diameter / 2, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+            const endCapMaterial = new THREE.MeshStandardMaterial({ 
+                color: nasaStationSpecs.materials.external.color,
+                roughness: 0.7,
+                metalness: 0.3
+            });
+            
+            const frontCap = new THREE.Mesh(endCapGeometry, endCapMaterial);
+            frontCap.position.x = nasaStationSpecs.dimensions.length / 2;
+            spaceStation.add(frontCap);
+            
+            const backCap = new THREE.Mesh(endCapGeometry, endCapMaterial);
+            backCap.position.x = -nasaStationSpecs.dimensions.length / 2;
+            backCap.rotation.z = Math.PI;
+            spaceStation.add(backCap);
+            
+            // Main door
+            const doorGeometry = new THREE.CylinderGeometry(
+                nasaStationSpecs.dimensions.doorDiameter / 2,
+                nasaStationSpecs.dimensions.doorDiameter / 2,
+                0.2,
+                32
+            );
+            const doorMaterial = new THREE.MeshStandardMaterial({ 
+                color: nasaStationSpecs.materials.titanium.color,
+                roughness: 0.5,
+                metalness: 0.7
+            });
+            
+            const mainDoor = new THREE.Mesh(doorGeometry, doorMaterial);
+            mainDoor.position.x = nasaStationSpecs.dimensions.length / 2 - 1;
+            mainDoor.position.y = -nasaStationSpecs.dimensions.diameter / 4;
+            mainDoor.rotation.x = Math.PI / 2;
+            spaceStation.add(mainDoor);
+            
+            // Solar panels - REALISTIC SIZE
+            const solarPanelGeometry = new THREE.BoxGeometry(6, 0.1, 3);
+            const solarPanelMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50,
+                roughness: 0.3,
+                metalness: 0.8
+            });
+            
+            const leftSolarPanel = new THREE.Mesh(solarPanelGeometry, solarPanelMaterial);
+            leftSolarPanel.position.y = nasaStationSpecs.dimensions.diameter / 2 + 1.5;
+            leftSolarPanel.position.x = 1;
+            spaceStation.add(leftSolarPanel);
+            
+            const rightSolarPanel = new THREE.Mesh(solarPanelGeometry, solarPanelMaterial);
+            rightSolarPanel.position.y = -nasaStationSpecs.dimensions.diameter / 2 - 1.5;
+            rightSolarPanel.position.x = 1;
+            spaceStation.add(rightSolarPanel);
+            
+            // Add rooms based on current configuration
+            updateStationRooms();
+            
+            scene.add(spaceStation);
+            updateMissionCalculations();
+            updateStationDetails();
+        }
+        
+        function updateStationRooms() {
+            // Remove old rooms
+            spaceStation.children.slice(6).forEach(child => spaceStation.remove(child));
+            
+            // Add rooms based on current configuration - REALISTIC SIZES
+            const roomColors = {
+                control: 0x2980b9,
+                lab: 0x27ae60,
+                bedroom: 0x8e44ad,
+                kitchen: 0xe74c3c,
+                bathroom: 0x3498db,
+                storage: 0xf39c12
+            };
+            
+            // Distribute rooms logically along the station
+            const roomPositions = {
+                control: { x: nasaStationSpecs.dimensions.length / 2 - 2, y: 0, z: 0 },
+                lab: { x: nasaStationSpecs.dimensions.length / 2 - 5, y: 0, z: 0 },
+                bedroom: { x: 0, y: 0, z: 0 },
+                kitchen: { x: -nasaStationSpecs.dimensions.length / 2 + 2, y: 0, z: 0 },
+                bathroom: { x: -nasaStationSpecs.dimensions.length / 2 + 4, y: 0, z: 0 },
+                storage: { x: -nasaStationSpecs.dimensions.length / 2 + 6, y: 0, z: 0 }
+            };
+            
+            Object.keys(roomConfig).forEach(roomType => {
+                const room = roomConfig[roomType];
+                const basePosition = roomPositions[roomType];
+                
+                for (let i = 0; i < room.quantity; i++) {
+                    const sizeMultiplier = room.size === 'small' ? 0.5 : room.size === 'medium' ? 0.7 : 0.9;
+                    
+                    const roomGeometry = new THREE.BoxGeometry(
+                        2 * sizeMultiplier,
+                        2 * sizeMultiplier,
+                        2 * sizeMultiplier
+                    );
+                    
+                    const roomMaterial = new THREE.MeshStandardMaterial({ 
+                        color: roomColors[roomType],
+                        roughness: 0.6,
+                        metalness: 0.4,
+                        transparent: true,
+                        opacity: 0.8
+                    });
+                    
+                    const roomMesh = new THREE.Mesh(roomGeometry, roomMaterial);
+                    
+                    // Distribute rooms logically
+                    roomMesh.position.x = basePosition.x + (i * 1.5);
+                    roomMesh.position.y = basePosition.y;
+                    roomMesh.position.z = basePosition.z;
+                    
+                    spaceStation.add(roomMesh);
+                }
+            });
+        }
+        
+        function updateStationDetails() {
+            const detailsContainer = document.getElementById('station-details');
+            let detailsHTML = '';
+            
+            // General specifications section
+            detailsHTML += `
+                <div class="station-details-section">
+                    <h4>General Specifications</h4>
+                    <p><strong>Dimensions:</strong> ${nasaStationSpecs.dimensions.length}m length × ${nasaStationSpecs.dimensions.diameter}m diameter</p>
+                    <p><strong>Main Door:</strong> Circular with ${nasaStationSpecs.dimensions.doorDiameter}m diameter</p>
+                    <p><strong>Crew Capacity:</strong> ${nasaStationSpecs.crew.capacity} members</p>
+                    <p><strong>Number of Rooms:</strong> ${nasaStationSpecs.crew.rooms}</p>
+                    <p><strong>Standard Mission Duration:</strong> ${nasaStationSpecs.mission.duration} days</p>
+                    <p><strong>Destination:</strong> ${nasaStationSpecs.mission.destination}</p>
+                </div>
+            `;
+            
+            // Materials section
+            detailsHTML += `
+                <div class="station-details-section">
+                    <h4>Materials Used (NASA Ratios)</h4>
+                    <div class="material-specs">
+            `;
+            
+            Object.values(nasaStationSpecs.materials).forEach(material => {
+                detailsHTML += `
+                    <div class="material-spec">
+                        <div class="material-name">${material.name}</div>
+                        <div class="material-percentage">${material.percentage}%</div>
+                        <div style="font-size: 12px; margin-top: 5px;">${material.description}</div>
+                    </div>
+                `;
+            });
+            
+            detailsHTML += `
+                    </div>
+                </div>
+            `;
+            
+            // Room distribution section
+            detailsHTML += `
+                <div class="station-details-section">
+                    <h4>Room Distribution</h4>
+            `;
+            
+            Object.keys(nasaStationSpecs.rooms).forEach(roomType => {
+                const room = nasaStationSpecs.rooms[roomType];
+                detailsHTML += `<p><strong>${room.name}:</strong> ${room.floor} Floor - Size: ${room.size}</p>`;
+            });
+            
+            detailsHTML += `</div>`;
+            
+            // Life support systems section
+            detailsHTML += `
+                <div class="station-details-section">
+                    <h4>Life Support Systems</h4>
+                    <p><strong>Oxygen System:</strong> ${nasaStationSpecs.systems.lifeSupport}</p>
+                    <p><strong>Internal Pressure:</strong> ${nasaStationSpecs.systems.pressure}</p>
+                    <p><strong>Temperature Control:</strong> ${nasaStationSpecs.systems.temperature}</p>
+                    <p><strong>Communication System:</strong> ${nasaStationSpecs.systems.communication}</p>
+                </div>
+            `;
+            
+            // Technical details section
+            detailsHTML += `
+                <div class="station-details-section">
+                    <h4>Technical Details</h4>
+                    <p><strong>General Shape:</strong> Cylindrical with hemispherical ends</p>
+                    <p><strong>Floors:</strong> Two (Upper and Lower)</p>
+                    <p><strong>Corridors:</strong> Semi-circular, 1.2 meters wide</p>
+                    <p><strong>Locks:</strong> Smart fingerprint and RFID system</p>
+                    <p><strong>Lighting:</strong> Hidden LED along internal edges</p>
+                    <p><strong>Interior Design:</strong> Clean futuristic style with calm colors</p>
+                </div>
+            `;
+            
+            detailsContainer.innerHTML = detailsHTML;
+        }
+        
+        function updateMissionCalculations() {
+            const destination = document.getElementById('destination').value;
+            const tripType = document.querySelector('.trip-btn.active').id === 'round-trip' ? 'round-trip' : 'one-way';
+            const crewSize = crewMembers.length;
+            const moonDuration = destination === 'moon' ? parseInt(document.getElementById('moon-duration').value) : 0;
+            
+            const missionData = SpaceMissionAI.calculateMission(destination, tripType, crewSize, moonDuration);
+            const recommendations = SpaceMissionAI.generateRecommendations(destination, crewSize, missionData);
+            const compliance = SpaceMissionAI.checkNASACompliance(missionData, crewSize, {
+                totalVolume: calculateTotalVolume()
+            });
+            
+            // Update UI
+            document.getElementById('mission-duration-display').textContent = `${missionData.totalMissionTime} days`;
+            document.getElementById('food-required').textContent = `${missionData.totalFood} kg`;
+            document.getElementById('water-required').textContent = `${missionData.totalWater} L`;
+            document.getElementById('oxygen-required').textContent = `${missionData.totalOxygen} kg`;
+            document.getElementById('power-required').textContent = `${missionData.totalPower} kWh`;
+            document.getElementById('total-volume').textContent = `${calculateTotalVolume()} m³`;
+            document.getElementById('destination-display').textContent = document.getElementById('destination').options[document.getElementById('destination').selectedIndex].text;
+            
+            // Display recommendations with apply buttons
+            const aiRec = document.getElementById('ai-recommendation');
+            aiRec.innerHTML = `<strong>AI Recommendations:</strong><br>`;
+            
+            recommendations.forEach(rec => {
+                const recElement = document.createElement('div');
+                recElement.style.marginBottom = '5px';
+                recElement.innerHTML = `
+                    ${rec.text} 
+                    <button style="width: auto; padding: 3px 8px; margin: 0 5px; font-size: 12px;" class="apply-recommendation">Apply</button>
+                `;
+                aiRec.appendChild(recElement);
+                
+                recElement.querySelector('.apply-recommendation').addEventListener('click', rec.action);
+            });
+            
+            // Update compliance indicator
+            updateComplianceIndicator(compliance);
+            
+            // Update habitat details
+            updateStationDetails();
+        }
+        
+        function calculateTotalVolume() {
+            return Object.values(roomConfig).reduce((total, room) => total + (room.volume * room.quantity), 0);
+        }
+        
+        function updateComplianceIndicator(compliance) {
+            const red = document.querySelector('.compliance-red');
+            const yellow = document.querySelector('.compliance-yellow');
+            const green = document.querySelector('.compliance-green');
+            
+            if (compliance.issues.length > 0) {
+                red.style.flex = '3';
+                yellow.style.flex = '1';
+                green.style.flex = '1';
+            } else if (compliance.warnings.length > 0) {
+                red.style.flex = '1';
+                yellow.style.flex = '3';
+                green.style.flex = '1';
+            } else {
+                red.style.flex = '1';
+                yellow.style.flex = '1';
+                green.style.flex = '3';
+            }
+        }
+        
+        function onWindowResize() {
+            const container = document.getElementById('space-station');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Update camera position and rotation based on controls
+            camera.position.x = cameraPosition.x;
+            camera.position.y = cameraPosition.y;
+            camera.position.z = cameraPosition.z;
+            
+            camera.rotation.x = cameraRotation.x;
+            camera.rotation.y = cameraRotation.y;
+            
+            // Slower auto-rotation when simulation is running and not manually controlling
+            if (spaceStation && !interiorView && simulationRunning && !isMouseDown) {
+                spaceStation.rotation.y += 0.002; // Reduced from 0.005 for slower rotation
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        function startSimulation() {
+            simulationRunning = true;
+            const simulationPanel = document.getElementById('simulation-active');
+            const progressBar = document.getElementById('progress-bar');
+            const statusText = document.getElementById('simulation-status');
+            
+            simulationPanel.style.display = 'block';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                progressBar.style.width = `${progress}%`;
+                
+                if (progress <= 25) {
+                    statusText.textContent = 'Initializing life support systems...';
+                } else if (progress <= 50) {
+                    statusText.textContent = 'Loading mission data...';
+                } else if (progress <= 75) {
+                    statusText.textContent = 'Activating power systems...';
+                } else {
+                    statusText.textContent = 'Launching simulation...';
+                }
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        simulationPanel.style.display = 'none';
+                        simulationRunning = false;
+                        alert('Simulation completed successfully! Space mission data has been analyzed.');
+                    }, 1000);
+                }
+            }, 50);
+        }
+        
+        function stopSimulation() {
+            simulationRunning = false;
+            document.getElementById('simulation-active').style.display = 'none';
+            document.getElementById('progress-bar').style.width = '0%';
+        }
+        
+        function resetView() {
+            cameraPosition = { x: 0, y: 10, z: 30 };
+            cameraRotation = { x: 0, y: 0 };
+        }
+        
+        function updateCrewList() {
+            const crewList = document.getElementById('crew-list');
+            crewList.innerHTML = '';
+            
+            crewMembers.forEach((member, index) => {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'crew-member';
+                memberDiv.innerHTML = `
+                    <span class="crew-name">${member}</span>
+                    <button class="remove-btn" data-index="${index}">Remove</button>
+                `;
+                crewList.appendChild(memberDiv);
+            });
+            
+            document.querySelectorAll('.remove-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    crewMembers.splice(index, 1);
+                    updateCrewList();
+                    updateMissionCalculations();
+                    SpaceMissionAI.askQuestion("crew-change");
+                });
+            });
+            
+            document.getElementById('crew-count').textContent = crewMembers.length;
+        }
+        
+        function updateRoomInfo(roomType) {
+            const room = roomConfig[roomType];
+            const roomDetails = document.getElementById('room-details');
+            const sizeNames = { small: 'Small', medium: 'Medium', large: 'Large' };
+            const typeNames = { standard: 'Standard', advanced: 'Advanced', luxury: 'Luxury', compact: 'Compact' };
+            
+            roomDetails.innerHTML = `
+                <strong>${getRoomName(roomType)}</strong><br>
+                Volume: ${room.volume} m³<br>
+                Level: ${sizeNames[room.size]}<br>
+                Type: ${typeNames[room.type]}<br>
+                Quantity: ${room.quantity}
+            `;
+            
+            document.getElementById('room-quantity').textContent = room.quantity;
+            
+            // Update room description
+            const roomDescription = document.getElementById('room-description');
+            roomDescription.innerHTML = `<strong>Room Description:</strong> ${nasaStationSpecs.rooms[roomType].description}`;
+        }
+        
+        function getRoomName(roomType) {
+            const names = {
+                control: 'Control Room',
+                lab: 'Science Laboratory',
+                bedroom: 'Bedrooms',
+                kitchen: 'Kitchen',
+                bathroom: 'Bathroom',
+                storage: 'Storage'
+            };
+            return names[roomType];
+        }
+        
+        function showAstronautDetails(astronautId) {
+            const astronaut = astronautsInfo[astronautId];
+            if (astronaut) {
+                document.getElementById('detail-name').textContent = astronaut.name;
+                document.getElementById('detail-content').innerHTML = `
+                    <p><strong>Role:</strong> ${astronaut.role}</p>
+                    <p><strong>Age:</strong> ${astronaut.age}</p>
+                    <p>${astronaut.details}</p>
+                `;
+                document.getElementById('astronaut-details').style.display = 'block';
+            }
+        }
+        
+        function exportModel() {
+            // Create a link element to download the model
+            const link = document.createElement('a');
+            
+            // In a real application, you would export the actual 3D model data
+            // For this demo, we'll create a simple text file with model specifications
+            let modelData = "Space Habitat Model - Andromeda Team\n";
+            modelData += "========================================\n\n";
+            modelData += `Dimensions: ${nasaStationSpecs.dimensions.length}m x ${nasaStationSpecs.dimensions.diameter}m\n`;
+            modelData += `Crew: ${crewMembers.length} members\n`;
+            modelData += `Destination: ${document.getElementById('destination').value}\n`;
+            modelData += `Mission Duration: ${document.getElementById('mission-duration-display').textContent}\n\n`;
+            modelData += "Room Configuration:\n";
+            
+            Object.keys(roomConfig).forEach(roomType => {
+                const room = roomConfig[roomType];
+                modelData += `- ${getRoomName(roomType)}: ${room.quantity} x ${room.size} (${room.type})\n`;
+            });
+            
+            // Create a blob with the model data
+            const blob = new Blob([modelData], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            // Set up the download link
+            link.href = url;
+            link.download = 'space_habitat_model.txt';
+            document.body.appendChild(link);
+            
+            // Trigger the download
+            link.click();
+            
+            // Clean up
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            alert('3D model specifications exported successfully!');
+            // Reset questions after export
+            SpaceMissionAI.resetQuestions();
+        }
+        
+        function clearModel() {
+            if (confirm('Are you sure you want to clear the current model and start over?')) {
+                // Reset all settings
+                crewMembers = ['Salahuddin Amer Makki', 'Ali Sarhan', 'Engineer Ali Al-Akbar', 'Zahra Ali', 'Doaa Rashid', 'Noor Abdulzahra'];
+                roomConfig = {
+                    control: { size: 'large', volume: 60, type: 'advanced', quantity: 1 },
+                    lab: { size: 'large', volume: 60, type: 'advanced', quantity: 1 },
+                    bedroom: { size: 'medium', volume: 45, type: 'standard', quantity: 6 },
+                    kitchen: { size: 'small', volume: 30, type: 'compact', quantity: 1 },
+                    bathroom: { size: 'small', volume: 25, type: 'compact', quantity: 2 },
+                    storage: { size: 'medium', volume: 50, type: 'standard', quantity: 2 }
+                };
+                
+                document.getElementById('destination').value = 'iss';
+                document.querySelectorAll('.trip-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById('round-trip').classList.add('active');
+                document.getElementById('moon-options').style.display = 'none';
+                
+                updateCrewList();
+                updateRoomInfo('control');
+                updateMissionCalculations();
+                updateStationRooms();
+                
+                // Reset questions after clearing model
+                SpaceMissionAI.resetQuestions();
+                
+                alert('Current model cleared and starting over.');
+            }
+        }
+        
+        function togglePanels() {
+            const infoPanel = document.querySelector('.info-panel');
+            const detailsPanel = document.getElementById('details-panel');
+            const aiPanel = document.getElementById('ai-question-panel');
+            
+            if (infoPanel.style.display === 'none') {
+                infoPanel.style.display = 'block';
+                if (detailsPanel.style.display === 'block') {
+                    detailsPanel.style.display = 'none';
+                }
+                if (aiPanel.style.display === 'block') {
+                    aiPanel.style.display = 'none';
+                }
+            } else {
+                infoPanel.style.display = 'none';
+                detailsPanel.style.display = 'none';
+                aiPanel.style.display = 'none';
+            }
+        }
+        
+        // Page events
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show welcome screen first
+            document.getElementById('welcome-screen').style.display = 'flex';
+            document.getElementById('main-container').style.display = 'none';
+            
+            // Astronaut card events
+            document.querySelectorAll('.astronaut-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const astronautId = this.getAttribute('data-astronaut');
+                    showAstronautDetails(astronautId);
+                });
+            });
+            
+            // Start simulation event
+            document.getElementById('start-button').addEventListener('click', function() {
+                document.getElementById('welcome-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('welcome-screen').style.display = 'none';
+                    document.getElementById('main-container').style.display = 'flex';
+                    document.getElementById('main-container').style.opacity = '1';
+                    
+                    // Initialize simulation after showing main interface
+                    init3DScene();
+                    updateCrewList();
+                    updateMissionCalculations();
+                    
+                    // Start interactive questions
+                    setTimeout(() => {
+                        SpaceMissionAI.askQuestion("destination-change");
+                    }, 2000);
+                }, 800);
+            });
+            
+            // إضافة مستمع لأيقونة العين
+            document.getElementById('ai-eye-toggle').addEventListener('click', toggleAI);
+            
+            // إضافة مستمع لزر تصدير Blender
+            document.getElementById('blender-export').addEventListener('click', function() {
+                document.getElementById('blender-modal').style.display = 'flex';
+            });
+            
+            // إضافة مستمعين لأزرار النافذة المنبثقة
+            document.getElementById('confirm-blender-export').addEventListener('click', exportToBlender);
+            document.getElementById('cancel-blender-export').addEventListener('click', function() {
+                document.getElementById('blender-modal').style.display = 'none';
+            });
+            
+            // إغلاق النافذة المنبثقة عند النقر خارجها
+            document.getElementById('blender-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+            
+            // Destination and mission type events
+            document.getElementById('destination').addEventListener('change', function() {
+                const moonOptions = document.getElementById('moon-options');
+                moonOptions.style.display = this.value === 'moon' ? 'block' : 'none';
+                updateMissionCalculations();
+                SpaceMissionAI.askQuestion("destination-change");
+            });
+            
+            document.querySelectorAll('.trip-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.trip-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateMissionCalculations();
+                });
+            });
+            
+            document.getElementById('moon-duration').addEventListener('change', updateMissionCalculations);
+            
+            // Crew events
+            document.getElementById('add-crew').addEventListener('click', function() {
+                const nameInput = document.getElementById('crew-name');
+                const name = nameInput.value.trim();
+                if (name) {
+                    crewMembers.push(name);
+                    updateCrewList();
+                    updateMissionCalculations();
+                    SpaceMissionAI.askQuestion("crew-change");
+                    nameInput.value = '';
+                }
+            });
+            
+            // Room events
+            document.querySelectorAll('.room-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const roomType = this.getAttribute('data-room');
+                    updateRoomInfo(roomType);
+                    SpaceMissionAI.askQuestion("room-change");
+                });
+            });
+            
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const size = this.getAttribute('data-size');
+                    const activeRoom = document.querySelector('.room-btn.active').getAttribute('data-room');
+                    
+                    // Update room size
+                    const baseVolumes = {
+                        control: 60, lab: 60, bedroom: 45, kitchen: 30, bathroom: 25, storage: 50
+                    };
+                    
+                    const multipliers = { small: 0.7, medium: 1.0, large: 1.3 };
+                    roomConfig[activeRoom] = {
+                        ...roomConfig[activeRoom],
+                        size: size,
+                        volume: Math.round(baseVolumes[activeRoom] * multipliers[size])
+                    };
+                    
+                    updateRoomInfo(activeRoom);
+                    updateMissionCalculations();
+                    updateStationRooms();
+                    SpaceMissionAI.askQuestion("safety-change");
+                });
+            });
+            
+            document.querySelectorAll('.room-type-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.room-type-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const type = this.getAttribute('data-type');
+                    const activeRoom = document.querySelector('.room-btn.active').getAttribute('data-room');
+                    
+                    roomConfig[activeRoom] = {
+                        ...roomConfig[activeRoom],
+                        type: type
+                    };
+                    
+                    updateRoomInfo(activeRoom);
+                    updateMissionCalculations();
+                    SpaceMissionAI.askQuestion("innovation-change");
+                });
+            });
+            
+            // Room quantity increase/decrease events
+            document.getElementById('increase-room').addEventListener('click', function() {
+                const activeRoom = document.querySelector('.room-btn.active').getAttribute('data-room');
+                roomConfig[activeRoom].quantity++;
+                updateRoomInfo(activeRoom);
+                updateMissionCalculations();
+                updateStationRooms();
+                SpaceMissionAI.askQuestion("sustainability-change");
+            });
+            
+            document.getElementById('decrease-room').addEventListener('click', function() {
+                const activeRoom = document.querySelector('.room-btn.active').getAttribute('data-room');
+                if (roomConfig[activeRoom].quantity > 1) {
+                    roomConfig[activeRoom].quantity--;
+                    updateRoomInfo(activeRoom);
+                    updateMissionCalculations();
+                    updateStationRooms();
+                    SpaceMissionAI.askQuestion("emergency-change");
+                }
+            });
+            
+            // Main button events
+            document.getElementById('simulate-btn').addEventListener('click', startSimulation);
+            document.getElementById('stop-simulation').addEventListener('click', stopSimulation);
+            document.getElementById('reset-view').addEventListener('click', resetView);
+            document.getElementById('export-model').addEventListener('click', exportModel);
+            document.getElementById('clear-model').addEventListener('click', clearModel);
+            document.getElementById('toggle-panels').addEventListener('click', togglePanels);
+            
+            // Details display events
+            document.getElementById('details-btn').addEventListener('click', function() {
+                document.getElementById('details-panel').style.display = 'block';
+            });
+            
+            document.getElementById('close-details').addEventListener('click', function() {
+                document.getElementById('details-panel').style.display = 'none';
+            });
+            
+            document.getElementById('close-astronaut-details').addEventListener('click', function() {
+                document.getElementById('astronaut-details').style.display = 'none';
+            });
+            
+            // Interactive AI events
+            document.getElementById('ai-answer-btn').addEventListener('click', function() {
+                const answer = document.getElementById('ai-answer-input').value.trim();
+                if (answer) {
+                    SpaceMissionAI.processAnswer(answer);
+                }
+            });
+            
+            document.getElementById('ai-answer-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const answer = this.value.trim();
+                    if (answer) {
+                        SpaceMissionAI.processAnswer(answer);
+                    }
+                }
+            });
+            
+            // Initial setup
+            updateRoomInfo('control');
+        });
+    </script>
+</body>
+</html>
